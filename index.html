@@ -64,7 +64,6 @@
             z-index: 10;
             color: #ffff00;
             filter: drop-shadow(0 0 10px #ffff00);
-            /* ふわふわ感を出すための回転アニメーション */
             transition: transform 0.2s;
         }
         .obstacle {
@@ -114,7 +113,7 @@
 
     <div id="start-screen">
         <h1 style="color: #ffcc00; margin-top:0;">Night Flight ♥</h1>
-        <p>夜空を飛ぶ「空とぶハート」を<br>タップで守ってね！</p>
+        <p>夜空をとぶ「ハート」を画面をタップして、<br>障害物に当たらないように<br>ゴールまで運んでね！</p>
         <button onclick="startGame()">スタート！ ♥</button>
     </div>
 
@@ -139,8 +138,8 @@
 
         let birdY = 250;
         let velocity = 0;
-        let gravity = 0.15; // 重力を半分にしました（よりふわふわ！）
-        let jump = -4.5;     // 重力に合わせてジャンプ力も調整
+        let gravity = 0.15; 
+        let jump = -4.5;     
         let isGameOver = false;
         let obstacles = [];
         let frameCount = 0;
@@ -179,8 +178,6 @@
             velocity += gravity;
             birdY += velocity;
             player.style.top = birdY + 'px';
-            
-            // 速度に合わせてハートを少し傾ける演出
             player.style.transform = `rotate(${velocity * 3}deg)`;
 
             if (birdY < -20 || birdY > 570) {
@@ -230,7 +227,7 @@
         }
 
         function createObstacle() {
-            const gap = 200; // 重力が弱くなったので避けやすく隙間をさらに広げました
+            const gap = 200; 
             const minHeight = 40;
             const topHeight = Math.floor(Math.random() * (300 - minHeight)) + minHeight;
 
@@ -277,4 +274,3 @@
     </script>
 </body>
 </html>
-
