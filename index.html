@@ -20,7 +20,7 @@
             width: 400px;
             height: 600px;
             background: linear-gradient(to bottom, #0b0e27 0%, #16213e 50%, #0f3460 100%);
-            border: 5px solid #fff3b0; /* 黄色に合わせた縁取り */
+            border: 5px solid #fff3b0;
             border-radius: 20px;
             box-shadow: 0 0 30px rgba(255, 243, 176, 0.3);
             overflow: hidden;
@@ -38,7 +38,6 @@
             50% { opacity: 1; }
         }
 
-        /* 流れ星のスタイル */
         .shooting-star {
             position: absolute;
             width: 2px;
@@ -63,13 +62,15 @@
             left: 50px;
             top: 250px;
             z-index: 10;
-            color: #ffff00; /* 明るい黄色 */
+            color: #ffff00;
             filter: drop-shadow(0 0 10px #ffff00);
+            /* ふわふわ感を出すための回転アニメーション */
+            transition: transform 0.2s;
         }
         .obstacle {
             position: absolute;
             width: 45px;
-            background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%); /* 障害物は青系にして黄色を引き立たせました */
+            background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
             border-radius: 8px;
             right: -60px;
             box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
@@ -138,14 +139,13 @@
 
         let birdY = 250;
         let velocity = 0;
-        let gravity = 0.3; 
-        let jump = -6;     
+        let gravity = 0.15; // 重力を半分にしました（よりふわふわ！）
+        let jump = -4.5;     // 重力に合わせてジャンプ力も調整
         let isGameOver = false;
         let obstacles = [];
         let frameCount = 0;
         let remainingDist = 50; 
 
-        // 星を生成
         for (let i = 0; i < 30; i++) {
             const star = document.createElement('div');
             star.className = 'star';
@@ -179,12 +179,14 @@
             velocity += gravity;
             birdY += velocity;
             player.style.top = birdY + 'px';
+            
+            // 速度に合わせてハートを少し傾ける演出
+            player.style.transform = `rotate(${velocity * 3}deg)`;
 
             if (birdY < -20 || birdY > 570) {
                 endGame(false);
             }
 
-            // 流れ星をたまに出す
             if (Math.random() < 0.01) {
                 createShootingStar();
             }
@@ -201,10 +203,10 @@
                 let rect1 = player.getBoundingClientRect();
                 let rect2 = obs.getBoundingClientRect();
 
-                if (rect1.left + 5 < rect2.right &&
-                    rect1.right - 5 > rect2.left &&
-                    rect1.top + 5 < rect2.bottom &&
-                    rect1.bottom - 5 > rect2.top) {
+                if (rect1.left + 8 < rect2.right &&
+                    rect1.right - 8 > rect2.left &&
+                    rect1.top + 8 < rect2.bottom &&
+                    rect1.bottom - 8 > rect2.top) {
                     endGame(false);
                 }
 
@@ -228,7 +230,7 @@
         }
 
         function createObstacle() {
-            const gap = 180; 
+            const gap = 200; // 重力が弱くなったので避けやすく隙間をさらに広げました
             const minHeight = 40;
             const topHeight = Math.floor(Math.random() * (300 - minHeight)) + minHeight;
 
@@ -256,11 +258,11 @@
             if (isWin) {
                 resultTitle.innerText = "CLEAR! ♥";
                 resultTitle.style.color = "#ffcc00";
-                document.getElementById('result-msg').innerText = "「空とぶハート」が、キラキラのゴールに到着です！";
+                document.getElementById('result-msg').innerText = "「空とぶハート」が、ゆったり優雅にゴールに到着です！";
             } else {
                 resultTitle.innerText = "残念...";
                 resultTitle.style.color = "#555";
-                document.getElementById('result-msg').innerText = "次はもっと上手に星の間を飛べるかな？";
+                document.getElementById('result-msg').innerText = "ふわふわ飛ぶのは少しコツがいるかな？";
             }
         }
 
