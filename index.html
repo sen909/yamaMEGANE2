@@ -1,1 +1,278 @@
-山田のテキスト
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>空とぶハート Night Flight ♥</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #0b0e27;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        #game-container {
+            position: relative;
+            width: 400px;
+            height: 600px;
+            background: linear-gradient(to bottom, #0b0e27 0%, #16213e 50%, #0f3460 100%);
+            border: 5px solid #fff3b0; /* 黄色に合わせた縁取り */
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(255, 243, 176, 0.3);
+            overflow: hidden;
+            display: none;
+        }
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: twinkle 2s infinite;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* 流れ星のスタイル */
+        .shooting-star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,1));
+            box-shadow: 0 0 10px white;
+            animation: shoot 1s linear forwards;
+        }
+        @keyframes shoot {
+            0% { transform: translateX(0) translateY(0) rotate(-45deg) scaleX(0); opacity: 1; }
+            100% { transform: translateX(-400px) translateY(400px) rotate(-45deg) scaleX(50); opacity: 0; }
+        }
+
+        #player {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            font-size: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            left: 50px;
+            top: 250px;
+            z-index: 10;
+            color: #ffff00; /* 明るい黄色 */
+            filter: drop-shadow(0 0 10px #ffff00);
+        }
+        .obstacle {
+            position: absolute;
+            width: 45px;
+            background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%); /* 障害物は青系にして黄色を引き立たせました */
+            border-radius: 8px;
+            right: -60px;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+        }
+        #ui {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            color: #fff;
+            font-weight: bold;
+            z-index: 20;
+            text-shadow: 0 0 5px #00f2fe;
+        }
+        #start-screen, #result-screen {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 5px 25px rgba(255, 243, 176, 0.5);
+            max-width: 300px;
+        }
+        button {
+            padding: 12px 30px;
+            font-size: 18px;
+            background-color: #ffd700;
+            color: #333;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        button:hover {
+            transform: scale(1.1);
+            background-color: #ffff00;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="start-screen">
+        <h1 style="color: #ffcc00; margin-top:0;">Night Flight ♥</h1>
+        <p>夜空を飛ぶ「空とぶハート」を<br>タップで守ってね！</p>
+        <button onclick="startGame()">スタート！ ♥</button>
+    </div>
+
+    <div id="game-container">
+        <div id="ui">ゴールまであと: <span id="progress">50</span></div>
+        <div id="player">♥</div>
+    </div>
+
+    <div id="result-screen" style="display: none;">
+        <h1 id="result-title"></h1>
+        <p id="result-msg"></p>
+        <button onclick="location.reload()">もう一度あそぶ ♥</button>
+    </div>
+
+    <script>
+        const container = document.getElementById('game-container');
+        const player = document.getElementById('player');
+        const progressTxt = document.getElementById('progress');
+        const startScreen = document.getElementById('start-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const resultTitle = document.getElementById('result-title');
+
+        let birdY = 250;
+        let velocity = 0;
+        let gravity = 0.3; 
+        let jump = -6;     
+        let isGameOver = false;
+        let obstacles = [];
+        let frameCount = 0;
+        let remainingDist = 50; 
+
+        // 星を生成
+        for (let i = 0; i < 30; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.width = Math.random() * 3 + 'px';
+            star.style.height = star.style.width;
+            star.style.top = Math.random() * 100 + '%';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 2 + 's';
+            container.appendChild(star);
+        }
+
+        function createShootingStar() {
+            if (isGameOver) return;
+            const sStar = document.createElement('div');
+            sStar.className = 'shooting-star';
+            sStar.style.top = Math.random() * 300 + 'px';
+            sStar.style.right = '-50px';
+            container.appendChild(sStar);
+            setTimeout(() => sStar.remove(), 1000);
+        }
+
+        function startGame() {
+            startScreen.style.display = 'none';
+            container.style.display = 'block';
+            requestAnimationFrame(update);
+        }
+
+        function update() {
+            if (isGameOver) return;
+
+            velocity += gravity;
+            birdY += velocity;
+            player.style.top = birdY + 'px';
+
+            if (birdY < -20 || birdY > 570) {
+                endGame(false);
+            }
+
+            // 流れ星をたまに出す
+            if (Math.random() < 0.01) {
+                createShootingStar();
+            }
+
+            if (frameCount % 100 === 0 && remainingDist > 5) {
+                createObstacle();
+            }
+
+            obstacles.forEach((obs, index) => {
+                let x = parseInt(obs.style.right);
+                x += 3.5; 
+                obs.style.right = x + 'px';
+
+                let rect1 = player.getBoundingClientRect();
+                let rect2 = obs.getBoundingClientRect();
+
+                if (rect1.left + 5 < rect2.right &&
+                    rect1.right - 5 > rect2.left &&
+                    rect1.top + 5 < rect2.bottom &&
+                    rect1.bottom - 5 > rect2.top) {
+                    endGame(false);
+                }
+
+                if (x > 450) {
+                    obs.remove();
+                    obstacles.splice(index, 1);
+                }
+            });
+
+            frameCount++;
+            if (frameCount % 40 === 0 && remainingDist > 0) {
+                remainingDist--;
+                progressTxt.innerText = remainingDist;
+            }
+
+            if (remainingDist <= 0) {
+                endGame(true);
+            } else {
+                requestAnimationFrame(update);
+            }
+        }
+
+        function createObstacle() {
+            const gap = 180; 
+            const minHeight = 40;
+            const topHeight = Math.floor(Math.random() * (300 - minHeight)) + minHeight;
+
+            const topObs = document.createElement('div');
+            topObs.className = 'obstacle';
+            topObs.style.height = topHeight + 'px';
+            topObs.style.top = '0px';
+            topObs.style.right = '-60px';
+            container.appendChild(topObs);
+            obstacles.push(topObs);
+
+            const bottomObs = document.createElement('div');
+            bottomObs.className = 'obstacle';
+            bottomObs.style.height = (600 - topHeight - gap) + 'px';
+            bottomObs.style.bottom = '0px';
+            bottomObs.style.right = '-60px';
+            container.appendChild(bottomObs);
+            obstacles.push(bottomObs);
+        }
+
+        function endGame(isWin) {
+            isGameOver = true;
+            container.style.display = 'none';
+            resultScreen.style.display = 'block';
+            if (isWin) {
+                resultTitle.innerText = "CLEAR! ♥";
+                resultTitle.style.color = "#ffcc00";
+                document.getElementById('result-msg').innerText = "「空とぶハート」が、キラキラのゴールに到着です！";
+            } else {
+                resultTitle.innerText = "残念...";
+                resultTitle.style.color = "#555";
+                document.getElementById('result-msg').innerText = "次はもっと上手に星の間を飛べるかな？";
+            }
+        }
+
+        const handleAction = (e) => {
+            if (e.type === 'keydown' && e.code !== 'Space') return;
+            if (!isGameOver) velocity = jump;
+        };
+
+        window.addEventListener('keydown', handleAction);
+        window.addEventListener('mousedown', handleAction);
+        window.addEventListener('touchstart', handleAction);
+    </script>
+</body>
+</html>
+
