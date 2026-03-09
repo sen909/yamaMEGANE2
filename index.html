@@ -89,7 +89,7 @@
             padding: 30px;
             border-radius: 20px;
             box-shadow: 0 5px 25px rgba(255, 243, 176, 0.5);
-            max-width: 300px;
+            max-width: 320px; /* 改行に合わせて少し広げました */
         }
         button {
             padding: 12px 30px;
@@ -102,6 +102,7 @@
             transition: 0.3s;
             font-weight: bold;
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            margin-top: 10px;
         }
         button:hover {
             transform: scale(1.1);
@@ -113,7 +114,11 @@
 
     <div id="start-screen">
         <h1 style="color: #ffcc00; margin-top:0;">Night Flight ♥</h1>
-        <p>夜空をとぶ「ハート」を画面をタップして、<br>障害物に当たらないように<br>ゴールまで運んでね！</p>
+        <!-- 文を細かく改行しました -->
+        <p>夜空をとぶ「ハート」を<br>
+           画面をタップして、<br>
+           障害物に当たらないように<br>
+           ゴールまで運んでね！</p>
         <button onclick="startGame()">スタート！ ♥</button>
     </div>
 
